@@ -20,6 +20,11 @@ import org.springframework.web.server.ResponseStatusException;
 /**
  * Controller for authentication endpoints.
  */
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 @RestController
 @RequestMapping("/auth")
 @Tag(name = "Authentication", description = "Endpoints for user registration and authentication")
@@ -43,7 +48,16 @@ public class AuthController {
 
     // PUBLIC_INTERFACE
     @PostMapping("/register")
-    @Operation(summary = "Register a new user", description = "Creates a new user account")
+    @Operation(
+        summary = "Register a new user",
+        description = "Creates a new user account with the provided details"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "User registered successfully",
+            content = @Content(schema = @Schema(implementation = AuthResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid request or email already registered"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
         if (userRepository.findByEmail(request.email()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already registered");
@@ -62,7 +76,16 @@ public class AuthController {
 
     // PUBLIC_INTERFACE
     @PostMapping("/login")
-    @Operation(summary = "Login user", description = "Authenticates user credentials and returns JWT token")
+    @Operation(
+        summary = "Login user",
+        description = "Authenticates user credentials and returns JWT token"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Login successful",
+            content = @Content(schema = @Schema(implementation = AuthResponse.class))),
+        @ApiResponse(responseCode = "401", description = "Invalid credentials"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password()));
@@ -79,7 +102,17 @@ public class AuthController {
 
     // PUBLIC_INTERFACE
     @GetMapping("/me")
-    @Operation(summary = "Get current user", description = "Returns the profile of the authenticated user")
+    @Operation(
+        summary = "Get current user",
+        description = "Returns the profile of the authenticated user",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Profile retrieved successfully",
+            content = @Content(schema = @Schema(implementation = AuthResponse.class))),
+        @ApiResponse(responseCode = "401", description = "Not authenticated"),
+        @ApiResponse(responseCode = "404", description = "User not found")
+    })
     public AuthResponse getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();

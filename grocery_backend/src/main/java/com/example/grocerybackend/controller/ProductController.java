@@ -16,6 +16,12 @@ import java.util.List;
 /**
  * REST controller for managing products.
  */
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 @RestController
 @RequestMapping("/api/products")
 @Tag(name = "Products", description = "Endpoints for managing products")
@@ -41,7 +47,14 @@ public class ProductController {
 
     // PUBLIC_INTERFACE
     @GetMapping
-    @Operation(summary = "List all products", description = "Returns all available products")
+    @Operation(
+        summary = "List all products",
+        description = "Returns all available products in the catalog"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Products retrieved successfully",
+            content = @Content(schema = @Schema(implementation = ProductResponse.class)))
+    })
     public List<ProductResponse> getAllProducts() {
         return productRepository.findAll().stream()
                 .map(this::toResponse)

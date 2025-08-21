@@ -17,9 +17,16 @@ import java.util.List;
 /**
  * REST controller for managing shopping cart.
  */
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 @RestController
 @RequestMapping("/api/cart")
 @Tag(name = "Cart", description = "Endpoints for managing shopping cart")
+@SecurityRequirement(name = "Bearer Authentication")
 public class CartController {
 
     private final CartRepository cartRepository;
